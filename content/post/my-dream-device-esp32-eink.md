@@ -1,18 +1,16 @@
-<!-- ---
-title: The journey to building a dream device - or a story of a failed project
-permalink: /stories/the-journey-to-building-a-dream-device-or-a-story-of-a-failed-project.html
-# permalink: /stories/{{:title}}
-layout: post
-description: "How the project began"
-author: 'me'
---- -->
++++
+title = "The journey to building a dream device - or a story of a failed project"
+date = 2022-11-29T03:06:55+01:00
+draft = false
+toc = true
++++
 
 
 
 ## Introduction 
 
 Back in the end of 2021 ...
-As many CS guys, I started to play with various technologies and toys. Some were really "for fun", some other are to scratch my own itch. 
+As many CS guys, I started to play with various technologies and toys. Some were really "for fun", others were for scratching my own itch. 
 Some ideas were developed further during a walk or under the shower and lead to the burning of many useless hours on side projects and ideas, with the E-ink-ESP32 project is one of them.
 
 I can remember the initiate idea was: I want to display something (an image, a graph, ...) on a monitor to help me learn vocabulary, idioms and proverbs. 
@@ -29,6 +27,6 @@ This device should also be wireless controlled , that means WIFI/Bluetooth/ZigBe
 - Display: E-ink display from Waveshare. Cheap enough and very easy to find.
 - Wireless: LoRa. The decision to switch to LoRa (due to power consumption) comes later, which leads to throwing most of the code written for Wifi-based data transmitting.
 
-HAHHAH
 
-[back to all stories ...]({{ site.baseurl }}/stories)
+## Next
+Test

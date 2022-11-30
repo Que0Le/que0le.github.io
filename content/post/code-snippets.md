@@ -1,0 +1,66 @@
++++
+title = "Code snippets and notes"
+date = "30/11/2022"
+author = "me"
+description = "Collected snippets over time ..."
++++
+
+## Python
+```python
+# create 2d array with values in range
+test_inp = np.arange(1, 31).reshape(5,6)
+```
+
+---
+
+## Developing Linux kernel modules
+
+#### Find filename with partial path:
+```bash
+find / -path \*asm/mmiowb.h
+# Remove permission denied messages and filter 5.8 kernel
+find / -path \*linux/openat2.h 2>/dev/null | grep 5.8
+```
+
+
+#### Include these paths. "**" might mean recursive 
+```bash
+${workspaceFolder}/**
+/usr/include/
+/usr/local/include/
+/usr/src/linux-hwe-5.8-headers-5.8.0-63/include/uapi/
+/usr/src/linux-headers-5.8.0-63-generic/**
+```
+
+#### vscode exclude some files:
+```json
+"files.exclude": {
+  "**/*.cmd": true,
+  "**/*.ko": true,
+  "**/*.mod": true,
+  "**/*.mod.c": true,
+  "**/*.mod.o": true,
+  "**/*.o": true
+}
+```
+
+#### Kernel print format: https://www.kernel.org/doc/Documentation/printk-formats.txt
+
+- No support for float.
+- Integer types
+- If variable is of Type,		use printk format specifier:
+
+	
+		int			%d or %x
+		unsigned int		%u or %x
+		long			%ld or %lx
+		unsigned long		%lu or %lx
+		long long		%lld or %llx
+		unsigned long long	%llu or %llx
+		size_t			%zu or %zx
+		ssize_t			%zd or %zx
+		s32			%d or %x
+		u32			%u or %x
+		s64			%lld or %llx
+		u64			%llu or %llx
+
