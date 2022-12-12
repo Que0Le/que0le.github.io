@@ -5,19 +5,32 @@ author = "me"
 description = "Collected snippets over time ..."
 +++
 
+---
 ## Fix Thinkpad T14 touchpad stops working
 My machine has Ubuntu 20.04 OEM installed, kernel 5.14, X11. After trying for a while, this commands seems to install the correct hardware:
 ```bash
 sudo apt install linux-generic-hwe-20.04
 ```
-
-
+---
+## Setup working environment
+Git
+```
+# Permission too open for private key
+chmod 700 ~/.ssh/key_name
+```
+---
 ## Python
 ```python
 # create 2d array with values in range
 test_inp = np.arange(1, 31).reshape(5,6)
 ```
 
+---
+## Golang
+Tell staticchecker to ignore the unused function
+```go
+//lint:ignore U1000 Ignore unused function temporarily for debugging
+```
 ---
 
 ## Developing Linux kernel modules
