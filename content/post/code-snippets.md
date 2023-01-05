@@ -21,8 +21,13 @@ chmod 700 ~/.ssh/key_name
 ---
 ## Python
 ```python
+# Hold execution terminal after execution
+python3 -i script.py
+
 # create 2d array with values in range
 test_inp = np.arange(1, 31).reshape(5,6)
+
+#
 ```
 
 ---
