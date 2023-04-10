@@ -1,6 +1,6 @@
 +++
-title = "Note on working with BPF/XDP"
-date = "30/11/2022"
+title = "Note on working with BPF XDP"
+date = "30/03/2023"
 author = "me"
 description = ""
 +++
