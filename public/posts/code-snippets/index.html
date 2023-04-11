@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html><head>
+	<meta charset="utf-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Code snippets and notes - Archie</title><link rel="icon" type="image/png" href=http://localhost/favicon.ico /><meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="description" content="Collected snippets over time ..." />
+	<meta property="og:image" content=""/>
+	<meta property="og:title" content="Code snippets and notes" />
+<meta property="og:description" content="Collected snippets over time ..." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://localhost/posts/code-snippets/" /><meta property="article:section" content="posts" />
+
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Code snippets and notes"/>
+<meta name="twitter:description" content="Collected snippets over time ..."/>
+<script src="http://localhost/js/feather.min.js"></script>
+	
+	
+        <link href="http://localhost/css/fonts.11a1877508139eac0b5b4852ceb110c35641b3533321e66e39149e901ed5756b.css" rel="stylesheet">
+	
+
+	
+	<link rel="stylesheet" type="text/css" media="screen" href="http://localhost/css/main.d902908ac6e0fab67957de5db5aea1b6455b19ae2ca98eac4c95a4a0fdc02238.css" />
+		<link id="darkModeStyle" rel="stylesheet" type="text/css" href="http://localhost/css/dark.c95c5dcf5f32f8b67bd36f7dab66680e068fce2b303087294114aabf7a7c080b.css"  disabled />
+	
+
+	
+	
+		<script type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+	
+		
+		<script type="text/x-mathjax-config">
+		MathJax.Hub.Config({
+			tex2jax: {
+				inlineMath: [['$','$'], ['\\(','\\)']],
+				displayMath: [['$$','$$'], ['\[','\]']],
+				processEscapes: true,
+				processEnvironments: true,
+				skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+				TeX: { equationNumbers: { autoNumber: "AMS" },
+						 extensions: ["AMSmath.js", "AMSsymbols.js"] }
+			}
+		});
+		</script>
+	
+
+	
+	
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.css">
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/katex.min.js"></script>
+		<script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.2/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body);"></script>
+		
+		
+		<script>
+			document.addEventListener("DOMContentLoaded", function() {
+					renderMathInElement(document.body, {
+							delimiters: [
+									{left: "$$", right: "$$", display: true},
+									{left: "$", right: "$", display: false}
+							]
+					});
+			});
+			</script>
+	
+	
+	
+</head>
+<body>
+        <div class="content"><header>
+	<div class="main">
+		<a href="http://localhost/">Archie</a>
+	</div>
+	<nav>
+		
+		<a href="/">Home</a>
+		
+		<a href="/posts">All posts</a>
+		
+		<a href="/about">About</a>
+		
+		<a href="/tags">Tags</a>
+		
+		
+        | <span id="dark-mode-toggle" onclick="toggleTheme()"></span>
+		<script src="http://localhost/js/themetoggle.js"></script>
+		
+	</nav>
+</header>
+
+<main>
+	<article>
+		<div class="title">
+			<h1 class="title">Code snippets and notes</h1>
+			<div class="meta">Posted on Jan 1, 0001</div>
+		</div>
+		
+
+		<section class="body">
+			<hr>
+<h2 id="fix-thinkpad-t14-touchpad-stops-working">Fix Thinkpad T14 touchpad stops working</h2>
+<p>My machine has Ubuntu 20.04 OEM installed, kernel 5.14, X11. After trying for a while, this commands seems to install the correct hardware:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>sudo apt install linux-generic-hwe-20.04
+</span></span></code></pre></div><hr>
+<h2 id="setup-working-environment">Setup working environment</h2>
+<p>Git</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-fallback" data-lang="fallback"><span style="display:flex;"><span># Permission too open for private key
+</span></span><span style="display:flex;"><span>chmod 700 ~/.ssh/key_name
+</span></span></code></pre></div><hr>
+<h2 id="python">Python</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># Hold execution terminal after execution</span>
+</span></span><span style="display:flex;"><span>python3 <span style="color:#f92672">-</span>i script<span style="color:#f92672">.</span>py
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># create 2d array with values in range</span>
+</span></span><span style="display:flex;"><span>test_inp <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>arange(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">31</span>)<span style="color:#f92672">.</span>reshape(<span style="color:#ae81ff">5</span>,<span style="color:#ae81ff">6</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#</span>
+</span></span></code></pre></div><hr>
+<h2 id="golang">Golang</h2>
+<p>Tell staticchecker to ignore the unused function</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-go" data-lang="go"><span style="display:flex;"><span><span style="color:#75715e">//lint:ignore U1000 Ignore unused function temporarily for debugging
+</span></span></span></code></pre></div><hr>
+<h2 id="developing-linux-kernel-modules">Developing Linux kernel modules</h2>
+<h4 id="find-filename-with-partial-path">Find filename with partial path:</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>find / -path <span style="color:#ae81ff">\*</span>asm/mmiowb.h
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># Remove permission denied messages and filter 5.8 kernel</span>
+</span></span><span style="display:flex;"><span>find / -path <span style="color:#ae81ff">\*</span>linux/openat2.h 2&gt;/dev/null | grep 5.8
+</span></span></code></pre></div><h4 id="include-these-paths--might-mean-recursive">Include these paths. &ldquo;**&rdquo; might mean recursive</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span><span style="color:#e6db74">${</span>workspaceFolder<span style="color:#e6db74">}</span>/**
+</span></span><span style="display:flex;"><span>/usr/include/
+</span></span><span style="display:flex;"><span>/usr/local/include/
+</span></span><span style="display:flex;"><span>/usr/src/linux-hwe-5.8-headers-5.8.0-63/include/uapi/
+</span></span><span style="display:flex;"><span>/usr/src/linux-headers-5.8.0-63-generic/**
+</span></span></code></pre></div><h4 id="vscode-exclude-some-files">vscode exclude some files:</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-json" data-lang="json"><span style="display:flex;"><span><span style="color:#e6db74">&#34;files.exclude&#34;</span><span style="color:#960050;background-color:#1e0010">:</span> {
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;**/*.cmd&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;**/*.ko&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;**/*.mod&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;**/*.mod.c&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;**/*.mod.o&#34;</span>: <span style="color:#66d9ef">true</span>,
+</span></span><span style="display:flex;"><span>  <span style="color:#f92672">&#34;**/*.o&#34;</span>: <span style="color:#66d9ef">true</span>
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h4 id="kernel-print-format-httpswwwkernelorgdocdocumentationprintk-formatstxt">Kernel print format: <a href="https://www.kernel.org/doc/Documentation/printk-formats.txt">https://www.kernel.org/doc/Documentation/printk-formats.txt</a></h4>
+<ul>
+<li>
+<p>No support for float.</p>
+</li>
+<li>
+<p>Integer types</p>
+</li>
+<li>
+<p>If variable is of Type,		use printk format specifier:</p>
+<pre><code>  int			%d or %x
+  unsigned int		%u or %x
+  long			%ld or %lx
+  unsigned long		%lu or %lx
+  long long		%lld or %llx
+  unsigned long long	%llu or %llx
+  size_t			%zu or %zx
+  ssize_t			%zd or %zx
+  s32			%d or %x
+  u32			%u or %x
+  s64			%lld or %llx
+  u64			%llu or %llx
+</code></pre>
+</li>
+</ul>
+
+		</section>
+
+		<div class="post-tags">
+			
+			
+			
+		</div>
+		</article>
+</main>
+<footer>
+  <div style="display:flex"><a class="soc" href="https://github.com/athul/archie" rel="me" title="GitHub"><i data-feather="github"></i></a>
+    <a class="border"></a><a class="soc" href="https://twitter.com/athulcajay/" rel="me" title="Twitter"><i data-feather="twitter"></i></a>
+    <a class="border"></a><a class="soc" href="https://gitlab.com/athul/" rel="me" title="GitLab"><i data-feather="gitlab"></i></a>
+    <a class="border"></a></div>
+  <div class="footer-info">
+    2023  © Athul |  <a
+      href="https://github.com/athul/archie">Archie Theme</a> | Built with <a href="https://gohugo.io">Hugo</a>
+  </div>
+</footer>
+
+
+<script>
+  feather.replace()
+</script></div>
+    </body>
+</html>
