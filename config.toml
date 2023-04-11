@@ -1,8 +1,8 @@
 baseurl = "https://que0le.github.io"
 languageCode = "en-us"
-title = "Archie"
+title = "que's snippets"
 theme="archie"
-copyright = "© Athul"
+copyright = "©Que0Le"
     
 
 # Code Highlight
@@ -18,31 +18,36 @@ summaryLength = 20
 [params]
 	mode="toggle" # color-mode → light,dark,toggle or auto
 	useCDN=false # don't use CDNs for fonts and icons, instead serve them locally.
-	subtitle = "Minimal and Clean [blog theme for Hugo](https://github.com/athul/archie)"
+	subtitle = "About work and life and things in between ..."
 	mathjax = true # enable MathJax support
 	katex = true # enable KaTeX support
     favicon = "favicon.ico"
+	mainSections = ["posts"]
+
+# Enable embed html
 [markup]
   [markup.goldmark]
     [markup.goldmark.renderer]
       unsafe = true
+  [markup.tableOfContents]
+    endLevel = 3
+    ordered = false
+    startLevel = 2
+
+# Enable tags.
+[taxonomies]
+   tag = "tags"
 
 # Social Tags
-
 [[params.social]]
 name = "GitHub"
 icon = "github"
-url = "https://github.com/athul/archie"
+url = "https://github.com/Que0Le"
 
 [[params.social]]
 name = "Twitter"
 icon = "twitter"
-url = "https://twitter.com/athulcajay/"
-
-[[params.social]]
-name = "GitLab"
-icon = "gitlab"
-url = "https://gitlab.com/athul/"
+url = ""
 
 # Main menu Items
 
@@ -65,3 +70,8 @@ weight = 3
 name = "Tags"
 url = "/tags"
 weight = 4
+
+[[menu.main]]
+name = "CV"
+url = "/cv"
+weight = 5

@@ -1,8 +1,9 @@
-+++
-title = "Code snippets and notes"
-date = "30/11/2022"
-description = "Collected snippets over time ..."
-+++
+---
+title: "Code snippets and notes"
+date: "30/11/2022"
+description: "Collected snippets over time ..."
+toc: true
+---
 
 ---
 ## Fix Thinkpad T14 touchpad stops working
