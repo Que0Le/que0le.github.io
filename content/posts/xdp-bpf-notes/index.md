@@ -1,8 +1,8 @@
-+++
-title = "Note on working with BPF XDP"
-date = "30/03/2023"
-description = "rg"
-+++
+---
+title: "Note on working with BPF XDP"
+date: "30/03/2023"
+description: "A collection of notes while working with XDP/eBPF on VSCode, Ubuntu"
+---
 
 ---
 ## vscode
