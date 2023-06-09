@@ -38,3 +38,9 @@ Fix undefine clock: add to ``c_cpp_properties.json``
     "_POSIX_C_SOURCE=199309L"
 ],
 ```
+
+## XDP sample program use cases
+
+* Single NIC, tx-only, UDP
+* Single NIC, rx-only, UDP
+* Single NIC, tx-rx, UDP, exchanging messages between 2 programs
