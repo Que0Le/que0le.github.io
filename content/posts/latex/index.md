@@ -18,7 +18,12 @@ date: 2022-11-29T03:06:55+01:00
   \includegraphics[width=1.0\textwidth]{resources/images/Network_data_flow_through_kernel.png}
   \caption{Network data flow through kernel \cite{Network_data_flow_through_kernel}.}
 \end{sidewaysfigure}
-
+%
+\begin{wrapfigure}{r}{0.5\textwidth}
+    \centering
+    \includegraphics[width=0.4\textwidth]{resources/images/dpdk-component.png}
+    \caption{Major DPDK components \cite{cerovic_fast_2018}}\label{fig:related:dpdkcomponents}
+\end{wrapfigure}
 ```
 
 ### Label
