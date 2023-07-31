@@ -1,6 +1,6 @@
 ---
 title: "Wireguard How to setup and config"
-date: "30/07/2023"
+date: "2023-07-30T00:00:00.000Z"
 description: "Setup wireguard can be hard sometimes ..."
 ---
 

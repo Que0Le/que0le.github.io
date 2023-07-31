@@ -1,6 +1,6 @@
 ---
 title: "Code snippets and notes"
-date: "30/11/2022"
+date: "2022-11-30T00:00:00+01:00"
 description: "Collected snippets over time ..."
 toc: true
 ---

@@ -1,6 +1,6 @@
 ---
 title: "About this blog"
-date: 2023-04-11T09:55:27+02:00
+date: "2023-04-11T09:55:27+02:00"
 tags: [tech]
 ---
 

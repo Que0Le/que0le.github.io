@@ -1,4 +1,12 @@
+[que0le.github.io/](que0le.github.io/)
 
+
+# Note
+
+
+# How to use
+
+Download the binary from [https://github.com/gohugoio/hugo/releases](https://github.com/gohugoio/hugo/releases)
 
 ```
 # Start server

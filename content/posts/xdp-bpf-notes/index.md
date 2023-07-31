@@ -1,6 +1,6 @@
 ---
 title: "Note on working with BPF XDP"
-date: "30/03/2023"
+date: "2022-11-30T00:00:00+01:00"
 description: "A collection of notes while working with XDP/eBPF on VSCode, Ubuntu"
 ---
 

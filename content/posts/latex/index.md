@@ -1,7 +1,7 @@
 ---
 title: "Latex code"
-date: 2022-11-29T03:06:55+01:00
-# draft: false
+date: "2022-11-29T03:06:55+01:00"
+description: "Some latex snippets ..."
 ---
 
 # Some useful snippets

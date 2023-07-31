@@ -1,6 +1,6 @@
 ---
 title: "Writing with Hugo"
-date: "30/11/2022"
+date: "2022-11-30T00:00:00+01:00"
 description: "Syntax and note on working with Hugo"
 ---
 

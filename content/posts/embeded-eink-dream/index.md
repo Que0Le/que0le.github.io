@@ -1,6 +1,6 @@
 ---
 title: "The journey to building a dream device - or a story of a failed project"
-date: 2022-11-29T03:06:55+01:00
+date: "2022-11-29T03:06:55+01:00"
 # draft: false
 ---
 
