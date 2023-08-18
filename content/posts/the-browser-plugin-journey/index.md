@@ -1,7 +1,7 @@
 ---
 title: "The Browser Plugin Journey"
 date: 2023-08-18T20:43:02+02:00
-draft: true
+draft: false
 ---
 
 # Snippets
