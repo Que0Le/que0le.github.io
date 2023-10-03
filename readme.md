@@ -14,6 +14,8 @@ Download the binary from [https://github.com/gohugoio/hugo/releases](https://git
 
 # Create new post
 ./hugo new content/posts/newpost/index.md
+And description: 
+`description: "A few note working with MongoDB and tools"`
 
 # Compile to `/public` dir:
 ./hugo
