@@ -1,7 +1,7 @@
 ---
-title: "Pi Bluetooth"
+title: "Pi, ESP32 and Bluetooth"
 date: 2023-12-10T13:00:54+01:00
-draft: true
+draft: false
 ---
 
 
