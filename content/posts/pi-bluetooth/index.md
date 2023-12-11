@@ -431,7 +431,9 @@ finally:
     worker1.join()
     worker2.join()
 
-    print("Main thread: Worker threads stopped. Exiting.")```
+    print("Main thread: Worker threads stopped. Exiting.")
+```
+
 
 #### ESP32 B
 ```cpp
