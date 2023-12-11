@@ -4,6 +4,11 @@ date: 2023-12-10T13:00:54+01:00
 draft: false
 ---
 
+## Source
+Many resources were used:
+- https://people.csail.mit.edu/albert/bluez-intro/c212.html
+- https://github.com/espressif/arduino-esp32/blob/master/libraries/BluetoothSerial/examples/SerialToSerialBT_Legacy/SerialToSerialBT_Legacy.ino
+- https://deepbluembedded.com/esp32-bluetooth-classic-with-arduino-complete-guide/
 
 ## Prepare
 
