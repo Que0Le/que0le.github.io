@@ -247,7 +247,9 @@ def parse_lora_msg(msg):
     data_list = msg.split(",")
     if len(data_list) != 5:
         return None
-    return {
+    parsed_data = {}
+    try:
+        parsed_data = {
         "name": data_list[1],
         "data": {
             "humid": float(data_list[2]), 
@@ -255,7 +257,11 @@ def parse_lora_msg(msg):
             "heat_index": float(data_list[4]), 
             "updated_at_ms": int(time.time() * 1000)}
         }
-
+    except Exception as e:
+        print("LoRa: error: ", e)
+        return None
+    return parsed_data
+    
 def lora_worker(arg1, arg2):
     # Based on 
     # https://github.com/chandrawi/LoRaRF-Python/blob/main/examples/SX127x/receiver_timeout.py
@@ -425,8 +431,7 @@ finally:
     worker1.join()
     worker2.join()
 
-    print("Main thread: Worker threads stopped. Exiting.")
-```
+    print("Main thread: Worker threads stopped. Exiting.")```
 
 #### ESP32 B
 ```cpp
