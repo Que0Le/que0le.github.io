@@ -4,6 +4,7 @@ date: "2022-11-29T03:06:55+01:00"
 # draft: false
 ---
 
+A WIP post about the IoT eink project.
 
 
 ## Introduction 
@@ -26,9 +27,21 @@ This device should also be wireless controlled , that means WIFI/Bluetooth/ZigBe
 - Display: E-ink display from Waveshare. Cheap enough and very easy to find.
 - Wireless: LoRa. The decision to switch to LoRa (due to power consumption) comes later, which leads to throwing most of the code written for Wifi-based data transmitting.
 
+One of the prototypes:
+
+<div style="float: left; margin-right: 20px; text-align: center;">
+    <img src="7.5_esp32.png" alt="In-door placates" width="60%" />
+    <span style="display:block;">An example of room schedule using a ESP32 and a 7.5 inch E-Ink display from Waveshare. Totol cost ~70$.</span>
+</div>
 
 ## Vision and Status
 ### Vision
+
+<div style="float: left; margin-right: 20px; text-align: center;">
+    <img src="overview-sys.png" alt="In-door placates" width="60%" />
+    <span style="display:block;">How the system looks like</span>
+</div>
+
 A system consisted of the content server, and the e-ink device.​
 - Content server is responsive for preparing the content to be displayed on the e-ink device.​
 - E-ink device has a microcontroller with internet-ability to fetch content from server to display on its e-ink display.​
@@ -139,6 +152,9 @@ sudo python3 -m pip install pybluez
 
 
 ### ESP32 listens, Pi pairs simple 
+<details>
+  <summary>Code</summary>
+
 ```c
 #include "BluetoothSerial.h"
 
@@ -179,8 +195,11 @@ sock.connect((bd_addr, port))
 sock.send("hello!!")
 sock.close()
 ```
+</details>
 
 ### Pi connects and sends data periodically 
+<details>
+  <summary>Code ESP32</summary>
 
 ```cpp
 #include "BluetoothSerial.h"
@@ -238,6 +257,10 @@ void loop() {
   delay(20);
 }
 ```
+</details>
+
+<details>
+  <summary>Code Pi</summary>
 
 ```python
 import bluetooth
@@ -277,13 +300,17 @@ while True:
     time.sleep(5)
 
 ```
+</details>
 
 ### 2 ESP32 and 1 Pi
 - ESP32 A sends weather data from sensor over LoRA.
 - Pi receives these data, stores in memory and periodically connects to ESP32 B and transmits processed data.
 - ESP32 B receives the data from Pi over Bluetooth and prints out.
 
-#### ESP32 A
+
+<details>
+  <summary>Code ESP32 A</summary>
+
 ```cpp
 
 #include <SPI.h>
@@ -355,8 +382,12 @@ void loop() {
 }
 
 ```
+</details>
 
-#### Pi
+
+<details>
+  <summary>Code Pi</summary>
+
 ```python
 import threading, signal
 import time, random, string, struct, array, copy
@@ -574,9 +605,12 @@ finally:
 
     print("Main thread: Worker threads stopped. Exiting.")
 ```
+</details>
 
 
-#### ESP32 B
+<details>
+  <summary>Code ESP32 B</summary>
+
 ```cpp
 #include "BluetoothSerial.h"
 #include <time.h>
@@ -644,3 +678,4 @@ void loop() {
   delay(20);
 }
 ```
+</details>

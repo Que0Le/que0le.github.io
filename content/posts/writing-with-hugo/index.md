@@ -4,6 +4,26 @@ date: "2022-11-30T00:00:00+01:00"
 description: "Syntax and note on working with Hugo"
 ---
 
+### Click to expand
+Source: https://gist.github.com/pierrejoubert73/902cc94d79424356a8d20be2b382e1ab
+````md
+<details>
+  <summary>Click me</summary>
+  
+  ### Heading
+  1. Foo
+  2. Bar
+     * Baz
+     * Qux
+
+  ### Some Javascript
+  ```js
+  function logSomething(something) {
+    console.log('Something', something);
+  }
+  ```
+</details>
+````
 
 ### Latex
 
