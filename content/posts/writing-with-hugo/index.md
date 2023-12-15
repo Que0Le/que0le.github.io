@@ -26,6 +26,11 @@ or
     <img src="nature.jpg" alt="This is a centered resized image" width="60%" />
     <span style="display:block;">This is a centered resized image</span>
 </div>
+
+<div style="align: left; text-align:center;">
+    <img src="" alt="" width="60%" />
+    <span style="display:block;"></span>
+</div>
 ```
 
 <div style="align: left; text-align:center;">
