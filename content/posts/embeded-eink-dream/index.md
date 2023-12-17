@@ -4,7 +4,7 @@ date: "2022-11-29T03:06:55+01:00"
 # draft: false
 ---
 
-A WIP post about the IoT eink project.
+A WIP post about the IoT eink project. The project is halted due to lack of time and opportunity.
 
 
 ## Introduction 
@@ -30,15 +30,37 @@ This device should also be wireless controlled , that means WIFI/Bluetooth/ZigBe
 One of the prototypes:
 
 <div style="float: left; margin-right: 20px; text-align: center;">
-    <img src="7.5_esp32.png" alt="In-door placates" width="60%" />
-    <span style="display:block;">An example of room schedule using a ESP32 and a 7.5 inch E-Ink display from Waveshare. Totol cost ~70$.</span>
+    <img src="7.5_esp32.png" alt="" width="60%" />
+    <span style="display:block;">An example of room schedule using a ESP32 and a 7.5 inch E-Ink display from Waveshare. Total cost ~70$.</span>
+</div>
+
+
+<div style="float: left; margin-right: 20px; text-align: center;">
+    <img src="esp32_mini_eink_lora.jpeg" alt="" width="60%" />
+    <span style="display:block;">An example of ESP32 + LoRa + E-Ink.</span>
+</div>
+
+
+<div style="float: left; margin-right: 20px; text-align: center;">
+    <img src="po_lora.jpeg" alt="" width="60%" />
+    <span style="display:block;">An example of Pi + LoRa.</span>
+</div>
+
+<div style="float: left; margin-right: 20px; text-align: center;">
+    <img src="9.7.jpeg" alt="" width="60%" />
+    <span style="display:block;">9.7 Inch display. Very good quality.</span>
+</div>
+
+<div style="float: left; margin-right: 20px; text-align: center;">
+    <img src="7.5_inch.jpeg" alt="" width="60%" />
+    <span style="display:block;">7.5 Inch display. Bad quality, but good for learning.</span>
 </div>
 
 ## Vision and Status
 ### Vision
 
 <div style="float: left; margin-right: 20px; text-align: center;">
-    <img src="overview-sys.png" alt="In-door placates" width="60%" />
+    <img src="overview-sys.png" alt="" width="60%" />
     <span style="display:block;">How the system looks like</span>
 </div>
 
@@ -46,7 +68,7 @@ A system consisted of the content server, and the e-ink device.​
 - Content server is responsive for preparing the content to be displayed on the e-ink device.​
 - E-ink device has a microcontroller with internet-ability to fetch content from server to display on its e-ink display.​
 
-The system can display the content for a long time without consuming the battery and remotely change them, making it suitable for unfrequently-changing content in distributed environment:​
+The system can display the content for a long time without consuming the battery and remotely change them, making it suitable for unfrequented-changing content in distributed environment:​
 
 <div style="float: left; margin-right: 20px; text-align: center;">
     <img src="uc1.png" alt="In-door placates" width="60%" />
@@ -59,17 +81,17 @@ The system can display the content for a long time without consuming the battery
 </div>
 
 <div style="float: left; text-align: center;">
-    <img src="uc3.png" alt="Out-door placates" width="60%" />
+    <img src="uc3.png" alt="" width="60%" />
     <span style="display:block;">Smart home</span>
 </div>
 
 <div style="float: left; text-align: center;">
-    <img src="uc4.png" alt="Out-door placates" width="60%" />
+    <img src="uc4.png" alt="" width="60%" />
     <span style="display:block;">Name tag, door tag</span>
 </div>
 
 <div style="float: left; text-align: center;">
-    <img src="uc5.png" alt="Out-door placates" width="60%" />
+    <img src="uc5.png" alt="" width="60%" />
     <span style="display:block;">Industrial</span>
 </div>
 
