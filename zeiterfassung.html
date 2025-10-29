@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Event Tracker - Multiple Done Events</title>
+<style>
+  body { font-family: sans-serif; margin: 20px; }
+  .controls { margin-bottom: 10px; }
+  input, select, button { margin-right: 5px; padding: 4px 8px; }
+  .event { display: flex; justify-content: space-between; align-items: center;
+           padding: 5px; margin: 3px 0; border-radius: 6px; }
+  .event.start { background: orange; }
+  .event.done { background: lightgreen; }
+  .event button { margin-left: 10px; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <button id="importBtn">Import JSON</button>
+  <button id="exportBtn">Export JSON</button>
+  <select id="dateSelect"></select>
+  <input type="text" id="taskInput" placeholder="Task name">
+  <button id="startBtn">Start Task</button>
+  <input type="file" id="fileInput" style="display:none">
+</div>
+
+<div id="eventList"></div>
+
+<script>
+const STORAGE_KEY = "eventData_v3";
+
+// ---- Helpers ----
+function getTodayStr() {
+  const d = new Date();
+  return d.toLocaleDateString('en-GB').split('/').reverse().join('-'); // yyyy-mm-dd
+}
+function formatTime(d) {
+  return d.toLocaleString('en-GB'); // dd/mm/yyyy, HH:MM:SS
+}
+function loadData() {
+  return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+}
+function saveData(data) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function getDates(data) {
+  return Object.keys(data).sort().reverse();
+}
+
+// ---- Elements ----
+const dateSelect = document.getElementById("dateSelect");
+const taskInput = document.getElementById("taskInput");
+const startBtn = document.getElementById("startBtn");
+const eventList = document.getElementById("eventList");
+const importBtn = document.getElementById("importBtn");
+const exportBtn = document.getElementById("exportBtn");
+const fileInput = document.getElementById("fileInput");
+
+let data = loadData();
+let currentDate = getTodayStr();
+
+// ---- UI & Logic ----
+function populateDateSelect() {
+  dateSelect.innerHTML = "";
+  const dates = getDates(data);
+  if (!dates.includes(currentDate)) dates.push(currentDate);
+  dates.sort().reverse();
+  for (const d of dates) {
+    const opt = document.createElement("option");
+    opt.value = d;
+    opt.textContent = d;
+    dateSelect.appendChild(opt);
+  }
+  dateSelect.value = currentDate;
+}
+
+function renderEvents() {
+  const events = data[currentDate] || [];
+  const ongoing = events.filter(e => e.status === "start");
+  const done = events.filter(e => e.status === "done")
+                     .sort((a,b)=> new Date(b.endTime||0) - new Date(a.endTime||0));
+  const sorted = [...ongoing, ...done];
+
+  eventList.innerHTML = "";
+  for (const ev of sorted) {
+    const div = document.createElement("div");
+    div.className = "event " + ev.status;
+
+    let text = `${ev.task}: ${ev.status.toUpperCase()}`;
+    if (ev.status === "start") text += ` - ${ev.startTime}`;
+    else text += ` - ${ev.startTime} → ${ev.endTime}`;
+    div.innerHTML = `<span>${text}</span>`;
+
+    const btn = document.createElement("button");
+    if (ev.status === "start") {
+      btn.textContent = "End";
+      btn.onclick = () => endTask(ev);
+    } else {
+      btn.textContent = "Start";
+      btn.onclick = () => resumeTask(ev.task);
+    }
+    div.appendChild(btn);
+    eventList.appendChild(div);
+  }
+}
+
+function taskActive(name) {
+  const events = data[currentDate] || [];
+  return events.some(e => e.task.toLowerCase() === name.toLowerCase() && e.status === "start");
+}
+
+function startTask(name) {
+  if (!name.trim()) return;
+  name = name.trim().toLowerCase();
+  if (taskActive(name)) return alert("Task already active today.");
+  const ev = { task: name, status: "start", startTime: formatTime(new Date()) };
+  if (!data[currentDate]) data[currentDate] = [];
+  data[currentDate].push(ev);
+  saveData(data);
+  renderEvents();
+}
+
+function endTask(ev) {
+  ev.status = "done";
+  ev.endTime = formatTime(new Date());
+  saveData(data);
+  renderEvents();
+}
+
+function resumeTask(name) {
+  if (taskActive(name)) return alert("Task already active today.");
+  const ev = { task: name.toLowerCase(), status: "start", startTime: formatTime(new Date()) };
+  if (!data[currentDate]) data[currentDate] = [];
+  data[currentDate].push(ev);
+  saveData(data);
+  renderEvents();
+}
+
+// ---- Import / Export ----
+exportBtn.onclick = () => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "eventData.json";
+  a.click();
+};
+
+importBtn.onclick = () => fileInput.click();
+
+fileInput.onchange = e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      data = JSON.parse(ev.target.result);
+      saveData(data);
+      populateDateSelect();
+      renderEvents();
+    } catch { alert("Invalid JSON file"); }
+  };
+  reader.readAsText(file);
+};
+
+// ---- Event bindings ----
+startBtn.onclick = () => startTask(taskInput.value);
+dateSelect.onchange = e => { currentDate = e.target.value; renderEvents(); };
+
+// ---- Init ----
+populateDateSelect();
+renderEvents();
+</script>
+</body>
+</html>
