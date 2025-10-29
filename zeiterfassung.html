@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Event Tracker - Multiple Done Events</title>
+<title>Event Tracker - With Duration & Report</title>
 <style>
   body { font-family: sans-serif; margin: 20px; }
   .controls { margin-bottom: 10px; }
@@ -19,6 +19,7 @@
 <div class="controls">
   <button id="importBtn">Import JSON</button>
   <button id="exportBtn">Export JSON</button>
+  <button id="reportBtn">Show Daily Report</button>
   <select id="dateSelect"></select>
   <input type="text" id="taskInput" placeholder="Task name">
   <button id="startBtn">Start Task</button>
@@ -28,15 +29,34 @@
 <div id="eventList"></div>
 
 <script>
-const STORAGE_KEY = "eventData_v3";
+const STORAGE_KEY = "eventData_v4";
 
 // ---- Helpers ----
 function getTodayStr() {
   const d = new Date();
   return d.toLocaleDateString('en-GB').split('/').reverse().join('-'); // yyyy-mm-dd
 }
+//function formatTime(d) {
+ // return d.toLocaleString('en-GB'); // dd/mm/yyyy, HH:MM:SS
+//}
+function formatDisplay(d) {
+  // nice display string for user
+  return d.toLocaleString('en-GB');
+}
 function formatTime(d) {
-  return d.toLocaleString('en-GB'); // dd/mm/yyyy, HH:MM:SS
+  // ISO string used for calculations
+  return d.toISOString();
+}
+
+function diffDuration(start, end) {
+  const s = new Date(start);
+  const e = new Date(end);
+  const diffMs = e - s;
+  const mins = Math.floor(diffMs / 60000);
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
 }
 function loadData() {
   return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
@@ -55,6 +75,7 @@ const startBtn = document.getElementById("startBtn");
 const eventList = document.getElementById("eventList");
 const importBtn = document.getElementById("importBtn");
 const exportBtn = document.getElementById("exportBtn");
+const reportBtn = document.getElementById("reportBtn");
 const fileInput = document.getElementById("fileInput");
 
 let data = loadData();
@@ -88,8 +109,12 @@ function renderEvents() {
     div.className = "event " + ev.status;
 
     let text = `${ev.task}: ${ev.status.toUpperCase()}`;
-    if (ev.status === "start") text += ` - ${ev.startTime}`;
-    else text += ` - ${ev.startTime} → ${ev.endTime}`;
+    //if (ev.status === "start") text += ` - ${ev.startTime}`;
+    //else text += ` - ${ev.startTime} → ${ev.endTime} (${ev.duration})`;
+    if (ev.status === "start")
+        text += ` - ${new Date(ev.startTime).toLocaleString('en-GB')}`;
+    else
+        text += ` - ${new Date(ev.startTime).toLocaleString('en-GB')} → ${new Date(ev.endTime).toLocaleString('en-GB')} (${ev.duration})`;
     div.innerHTML = `<span>${text}</span>`;
 
     const btn = document.createElement("button");
@@ -97,7 +122,7 @@ function renderEvents() {
       btn.textContent = "End";
       btn.onclick = () => endTask(ev);
     } else {
-      btn.textContent = "Start";
+      btn.textContent = "Resume";
       btn.onclick = () => resumeTask(ev.task);
     }
     div.appendChild(btn);
@@ -124,6 +149,7 @@ function startTask(name) {
 function endTask(ev) {
   ev.status = "done";
   ev.endTime = formatTime(new Date());
+  ev.duration = diffDuration(ev.startTime, ev.endTime);
   saveData(data);
   renderEvents();
 }
@@ -135,6 +161,31 @@ function resumeTask(name) {
   data[currentDate].push(ev);
   saveData(data);
   renderEvents();
+}
+
+function showDailyReport() {
+  const events = data[currentDate] || [];
+  const doneEvents = events.filter(e => e.status === "done");
+  if (doneEvents.length === 0) return alert("No completed tasks for this day.");
+
+  const totals = {};
+  for (const ev of doneEvents) {
+    const name = ev.task.toLowerCase();
+    const s = new Date(ev.startTime);
+    const e = new Date(ev.endTime);
+    const diffMs = e - s;
+    totals[name] = (totals[name] || 0) + diffMs;
+  }
+
+  let report = `Time Report for ${currentDate}\n`;
+  for (const [task, ms] of Object.entries(totals)) {
+    const mins = Math.floor(ms / 60000);
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    const dur = h > 0 ? `${h}h ${m}m` : `${m}m`;
+    report += `${task}: ${dur}\n`;
+  }
+  alert(report);
 }
 
 // ---- Import / Export ----
@@ -167,6 +218,7 @@ fileInput.onchange = e => {
 // ---- Event bindings ----
 startBtn.onclick = () => startTask(taskInput.value);
 dateSelect.onchange = e => { currentDate = e.target.value; renderEvents(); };
+reportBtn.onclick = showDailyReport;
 
 // ---- Init ----
 populateDateSelect();
