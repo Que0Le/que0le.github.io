@@ -2,16 +2,26 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Event Tracker - With Duration & Report</title>
+<title>Event Tracker v6</title>
 <style>
   body { font-family: sans-serif; margin: 20px; }
   .controls { margin-bottom: 10px; }
-  input, select, button { margin-right: 5px; padding: 4px 8px; }
+  input, select, button, label { margin-right: 5px; padding: 4px 8px; }
   .event { display: flex; justify-content: space-between; align-items: center;
            padding: 5px; margin: 3px 0; border-radius: 6px; }
   .event.start { background: orange; }
   .event.done { background: lightgreen; }
   .event button { margin-left: 10px; }
+
+  /* Modal styles */
+  #closeModal {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    display: none; justify-content: center; align-items: center;
+    background: rgba(0,0,0,0.5);
+  }
+  #closeModal .modal-content {
+    background: white; padding: 20px; border-radius: 10px; text-align: center;
+  }
 </style>
 </head>
 <body>
@@ -23,52 +33,62 @@
   <select id="dateSelect"></select>
   <input type="text" id="taskInput" placeholder="Task name">
   <button id="startBtn">Start Task</button>
+  <label><input type="checkbox" id="noParallel"> No parallel</label>
   <input type="file" id="fileInput" style="display:none">
 </div>
 
 <div id="eventList"></div>
 
-<script>
-const STORAGE_KEY = "eventData_v4";
+<!-- Close warning modal -->
+<div id="closeModal">
+  <div class="modal-content">
+    <p>You are closing the page — download your data first.</p>
+    <button id="downloadBtn">Download JSON</button>
+    <button id="forceCloseBtn">Close Anyway</button>
+  </div>
+</div>
 
-// ---- Helpers ----
+<script>
+const STORAGE_KEY = "eventTracker_v6";
+
+function loadData() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return { events: {}, preferences: { noParallel: false } };
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed.events) parsed.events = {};
+    if (!parsed.preferences) parsed.preferences = { noParallel: false };
+    return parsed;
+  } catch {
+    return { events: {}, preferences: { noParallel: false } };
+  }
+}
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
 function getTodayStr() {
   const d = new Date();
   return d.toLocaleDateString('en-GB').split('/').reverse().join('-'); // yyyy-mm-dd
 }
-//function formatTime(d) {
- // return d.toLocaleString('en-GB'); // dd/mm/yyyy, HH:MM:SS
-//}
-function formatDisplay(d) {
-  // nice display string for user
-  return d.toLocaleString('en-GB');
-}
 function formatTime(d) {
-  // ISO string used for calculations
-  return d.toISOString();
+  return d.toISOString(); // always store ISO
 }
-
+function displayTime(t) {
+  const d = new Date(t);
+  const date = d.toLocaleDateString('de-DE'); // 29.10.2025
+  const time = d.toLocaleTimeString('de-DE'); // 14:23:45
+  return `${time}, ${date}`;
+}
 function diffDuration(start, end) {
-  const s = new Date(start);
-  const e = new Date(end);
-  const diffMs = e - s;
-  const mins = Math.floor(diffMs / 60000);
-  const h = Math.floor(mins / 60);
-  const m = mins % 60;
+  const s = new Date(start), e = new Date(end);
+  const diff = e - s;
+  const mins = Math.floor(diff / 60000);
+  const h = Math.floor(mins / 60), m = mins % 60;
   if (h > 0) return `${h}h ${m}m`;
   return `${m}m`;
 }
-function loadData() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-}
-function saveData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
-function getDates(data) {
-  return Object.keys(data).sort().reverse();
-}
 
-// ---- Elements ----
+// --- DOM elements ---
 const dateSelect = document.getElementById("dateSelect");
 const taskInput = document.getElementById("taskInput");
 const startBtn = document.getElementById("startBtn");
@@ -77,16 +97,18 @@ const importBtn = document.getElementById("importBtn");
 const exportBtn = document.getElementById("exportBtn");
 const reportBtn = document.getElementById("reportBtn");
 const fileInput = document.getElementById("fileInput");
+const noParallelBox = document.getElementById("noParallel");
+const closeModal = document.getElementById("closeModal");
+const downloadBtn = document.getElementById("downloadBtn");
+const forceCloseBtn = document.getElementById("forceCloseBtn");
 
 let data = loadData();
 let currentDate = getTodayStr();
 
-// ---- UI & Logic ----
 function populateDateSelect() {
   dateSelect.innerHTML = "";
-  const dates = getDates(data);
+  const dates = Object.keys(data.events).sort();
   if (!dates.includes(currentDate)) dates.push(currentDate);
-  dates.sort().reverse();
   for (const d of dates) {
     const opt = document.createElement("option");
     opt.value = d;
@@ -97,33 +119,23 @@ function populateDateSelect() {
 }
 
 function renderEvents() {
-  const events = data[currentDate] || [];
-  const ongoing = events.filter(e => e.status === "start");
-  const done = events.filter(e => e.status === "done")
-                     .sort((a,b)=> new Date(b.endTime||0) - new Date(a.endTime||0));
-  const sorted = [...ongoing, ...done];
-
+  const events = data.events[currentDate] || [];
+  // Reverse sort (newest first)
+  const sorted = [...events].sort((a,b)=> new Date(b.startTime) - new Date(a.startTime));
   eventList.innerHTML = "";
   for (const ev of sorted) {
     const div = document.createElement("div");
     div.className = "event " + ev.status;
-
-    let text = `${ev.task}: ${ev.status.toUpperCase()}`;
-    //if (ev.status === "start") text += ` - ${ev.startTime}`;
-    //else text += ` - ${ev.startTime} → ${ev.endTime} (${ev.duration})`;
-    if (ev.status === "start")
-        text += ` - ${new Date(ev.startTime).toLocaleString('en-GB')}`;
-    else
-        text += ` - ${new Date(ev.startTime).toLocaleString('en-GB')} → ${new Date(ev.endTime).toLocaleString('en-GB')} (${ev.duration})`;
+    let text = `${ev.task}: ${ev.status.toUpperCase()} - ${displayTime(ev.startTime)}`;
+    if (ev.status === "done") text += ` → ${displayTime(ev.endTime)} (${ev.duration})`;
     div.innerHTML = `<span>${text}</span>`;
-
     const btn = document.createElement("button");
     if (ev.status === "start") {
       btn.textContent = "End";
       btn.onclick = () => endTask(ev);
     } else {
-      btn.textContent = "Resume";
-      btn.onclick = () => resumeTask(ev.task);
+      btn.textContent = "Start Again";
+      btn.onclick = () => startAgain(ev.task);
     }
     div.appendChild(btn);
     eventList.appendChild(div);
@@ -131,7 +143,7 @@ function renderEvents() {
 }
 
 function taskActive(name) {
-  const events = data[currentDate] || [];
+  const events = data.events[currentDate] || [];
   return events.some(e => e.task.toLowerCase() === name.toLowerCase() && e.status === "start");
 }
 
@@ -139,10 +151,23 @@ function startTask(name) {
   if (!name.trim()) return;
   name = name.trim().toLowerCase();
   if (taskActive(name)) return alert("Task already active today.");
+
+  if (data.preferences.noParallel) {
+    const evs = data.events[currentDate] || [];
+    const now = new Date();
+    for (const e of evs) {
+      if (e.status === "start") {
+        e.status = "done";
+        e.endTime = formatTime(now);
+        e.duration = diffDuration(e.startTime, e.endTime);
+      }
+    }
+  }
+
   const ev = { task: name, status: "start", startTime: formatTime(new Date()) };
-  if (!data[currentDate]) data[currentDate] = [];
-  data[currentDate].push(ev);
-  saveData(data);
+  if (!data.events[currentDate]) data.events[currentDate] = [];
+  data.events[currentDate].push(ev);
+  saveData();
   renderEvents();
 }
 
@@ -150,56 +175,48 @@ function endTask(ev) {
   ev.status = "done";
   ev.endTime = formatTime(new Date());
   ev.duration = diffDuration(ev.startTime, ev.endTime);
-  saveData(data);
+  saveData();
   renderEvents();
 }
 
-function resumeTask(name) {
+function startAgain(name) {
   if (taskActive(name)) return alert("Task already active today.");
-  const ev = { task: name.toLowerCase(), status: "start", startTime: formatTime(new Date()) };
-  if (!data[currentDate]) data[currentDate] = [];
-  data[currentDate].push(ev);
-  saveData(data);
-  renderEvents();
+  startTask(name);
 }
 
 function showDailyReport() {
-  const events = data[currentDate] || [];
+  const events = data.events[currentDate] || [];
   const doneEvents = events.filter(e => e.status === "done");
-  if (doneEvents.length === 0) return alert("No completed tasks for this day.");
+  if (!doneEvents.length) return alert("No completed tasks for this day.");
 
   const totals = {};
   for (const ev of doneEvents) {
     const name = ev.task.toLowerCase();
     const s = new Date(ev.startTime);
     const e = new Date(ev.endTime);
-    const diffMs = e - s;
-    totals[name] = (totals[name] || 0) + diffMs;
+    totals[name] = (totals[name] || 0) + (e - s);
   }
 
-  let report = `Time Report for ${currentDate}\n`;
-  for (const [task, ms] of Object.entries(totals)) {
+  let msg = `Time Report for ${currentDate}\n`;
+  for (const [name, ms] of Object.entries(totals)) {
     const mins = Math.floor(ms / 60000);
-    const h = Math.floor(mins / 60);
-    const m = mins % 60;
-    const dur = h > 0 ? `${h}h ${m}m` : `${m}m`;
-    report += `${task}: ${dur}\n`;
+    const h = Math.floor(mins / 60), m = mins % 60;
+    msg += `${name}: ${h > 0 ? `${h}h ` : ""}${m}m\n`;
   }
-  alert(report);
+  alert(msg);
 }
 
-// ---- Import / Export ----
-exportBtn.onclick = () => {
+// --- Import/Export ---
+exportBtn.onclick = () => downloadJSON();
+function downloadJSON() {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
   a.download = "eventData.json";
   a.click();
-};
-
+}
 importBtn.onclick = () => fileInput.click();
-
 fileInput.onchange = e => {
   const file = e.target.files[0];
   if (!file) return;
@@ -207,20 +224,45 @@ fileInput.onchange = e => {
   reader.onload = ev => {
     try {
       data = JSON.parse(ev.target.result);
-      saveData(data);
+      saveData();
       populateDateSelect();
+      noParallelBox.checked = data.preferences.noParallel;
       renderEvents();
     } catch { alert("Invalid JSON file"); }
   };
   reader.readAsText(file);
 };
 
-// ---- Event bindings ----
+// --- Preferences ---
+noParallelBox.checked = data.preferences.noParallel;
+noParallelBox.onchange = () => {
+  data.preferences.noParallel = noParallelBox.checked;
+  saveData();
+};
+
+// --- Close warning modal ---
+// let allowClose = false;
+// window.addEventListener("beforeunload", (e) => {
+//   if (!allowClose) {
+//     e.preventDefault();
+//     e.returnValue = "";
+//     closeModal.style.display = "flex";
+//     return "";
+//   }
+// });
+downloadBtn.onclick = downloadJSON;
+forceCloseBtn.onclick = () => {
+  allowClose = true;
+  closeModal.style.display = "none";
+  window.close(); // attempt to close
+};
+
+// --- Event bindings ---
 startBtn.onclick = () => startTask(taskInput.value);
 dateSelect.onchange = e => { currentDate = e.target.value; renderEvents(); };
 reportBtn.onclick = showDailyReport;
 
-// ---- Init ----
+// --- Init ---
 populateDateSelect();
 renderEvents();
 </script>
