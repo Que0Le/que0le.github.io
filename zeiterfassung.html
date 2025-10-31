@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Event Tracker v6</title>
+<style>
+  body { font-family: sans-serif; margin: 20px; }
+  .controls { margin-bottom: 10px; }
+  input, select, button, label { margin-right: 5px; padding: 4px 8px; }
+  .event { display: flex; justify-content: space-between; align-items: center;
+           padding: 5px; margin: 3px 0; border-radius: 6px; }
+  .event.start { background: orange; }
+  .event.done { background: lightgreen; }
+  .event button { margin-left: 10px; }
+
+  /* Modal styles */
+  #closeModal {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    display: none; justify-content: center; align-items: center;
+    background: rgba(0,0,0,0.5);
+  }
+  #closeModal .modal-content {
+    background: white; padding: 20px; border-radius: 10px; text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <button id="importBtn">Import JSON</button>
+  <button id="exportBtn">Export JSON</button>
+  <button id="reportBtn">Show Daily Report</button>
+  <select id="dateSelect"></select>
+  <input type="text" id="taskInput" placeholder="Task name">
+  <button id="startBtn">Start Task</button>
+  <label><input type="checkbox" id="noParallel"> No parallel</label>
+  <input type="file" id="fileInput" style="display:none">
+</div>
+
+<div id="eventList"></div>
+
+<!-- Close warning modal -->
+<div id="closeModal">
+  <div class="modal-content">
+    <p>You are closing the page — download your data first.</p>
+    <button id="downloadBtn">Download JSON</button>
+    <button id="forceCloseBtn">Close Anyway</button>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = "eventTracker_v6";
+
+function loadData() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return { events: {}, preferences: { noParallel: false } };
+  try {
+    const parsed = JSON.parse(raw);
+    if (!parsed.events) parsed.events = {};
+    if (!parsed.preferences) parsed.preferences = { noParallel: false };
+    return parsed;
+  } catch {
+    return { events: {}, preferences: { noParallel: false } };
+  }
+}
+function saveData() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+function getTodayStr() {
+  const d = new Date();
+  return d.toLocaleDateString('en-GB').split('/').reverse().join('-'); // yyyy-mm-dd
+}
+function formatTime(d) {
+  return d.toISOString(); // always store ISO
+}
+function displayTime(t) {
+  const d = new Date(t);
+  const date = d.toLocaleDateString('de-DE'); // 29.10.2025
+  const time = d.toLocaleTimeString('de-DE'); // 14:23:45
+  return `${time}, ${date}`;
+}
+function diffDuration(start, end) {
+  const s = new Date(start), e = new Date(end);
+  const diff = e - s;
+  const mins = Math.floor(diff / 60000);
+  const h = Math.floor(mins / 60), m = mins % 60;
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
+}
+
+// --- DOM elements ---
+const dateSelect = document.getElementById("dateSelect");
+const taskInput = document.getElementById("taskInput");
+const startBtn = document.getElementById("startBtn");
+const eventList = document.getElementById("eventList");
+const importBtn = document.getElementById("importBtn");
+const exportBtn = document.getElementById("exportBtn");
+const reportBtn = document.getElementById("reportBtn");
+const fileInput = document.getElementById("fileInput");
+const noParallelBox = document.getElementById("noParallel");
+const closeModal = document.getElementById("closeModal");
+const downloadBtn = document.getElementById("downloadBtn");
+const forceCloseBtn = document.getElementById("forceCloseBtn");
+
+let data = loadData();
+let currentDate = getTodayStr();
+
+function populateDateSelect() {
+  dateSelect.innerHTML = "";
+  const dates = Object.keys(data.events).sort();
+  if (!dates.includes(currentDate)) dates.push(currentDate);
+  for (const d of dates) {
+    const opt = document.createElement("option");
+    opt.value = d;
+    opt.textContent = d;
+    dateSelect.appendChild(opt);
+  }
+  dateSelect.value = currentDate;
+}
+
+function renderEvents() {
+  const events = data.events[currentDate] || [];
+  // Reverse sort (newest first)
+  const sorted = [...events].sort((a,b)=> new Date(b.startTime) - new Date(a.startTime));
+  eventList.innerHTML = "";
+  for (const ev of sorted) {
+    const div = document.createElement("div");
+    div.className = "event " + ev.status;
+    let text = `${ev.task}: ${ev.status.toUpperCase()} - ${displayTime(ev.startTime)}`;
+    if (ev.status === "done") text += ` → ${displayTime(ev.endTime)} (${ev.duration})`;
+    div.innerHTML = `<span>${text}</span>`;
+    const btn = document.createElement("button");
+    if (ev.status === "start") {
+      btn.textContent = "End";
+      btn.onclick = () => endTask(ev);
+    } else {
+      btn.textContent = "Start Again";
+      btn.onclick = () => startAgain(ev.task);
+    }
+    div.appendChild(btn);
+    eventList.appendChild(div);
+  }
+}
+
+function taskActive(name) {
+  const events = data.events[currentDate] || [];
+  return events.some(e => e.task.toLowerCase() === name.toLowerCase() && e.status === "start");
+}
+
+function startTask(name) {
+  if (!name.trim()) return;
+  name = name.trim().toLowerCase();
+  if (taskActive(name)) return alert("Task already active today.");
+
+  if (data.preferences.noParallel) {
+    const evs = data.events[currentDate] || [];
+    const now = new Date();
+    for (const e of evs) {
+      if (e.status === "start") {
+        e.status = "done";
+        e.endTime = formatTime(now);
+        e.duration = diffDuration(e.startTime, e.endTime);
+      }
+    }
+  }
+
+  const ev = { task: name, status: "start", startTime: formatTime(new Date()) };
+  if (!data.events[currentDate]) data.events[currentDate] = [];
+  data.events[currentDate].push(ev);
+  saveData();
+  renderEvents();
+}
+
+function endTask(ev) {
+  ev.status = "done";
+  ev.endTime = formatTime(new Date());
+  ev.duration = diffDuration(ev.startTime, ev.endTime);
+  saveData();
+  renderEvents();
+}
+
+function startAgain(name) {
+  if (taskActive(name)) return alert("Task already active today.");
+  startTask(name);
+}
+
+function showDailyReport() {
+  const events = data.events[currentDate] || [];
+  const doneEvents = events.filter(e => e.status === "done");
+  if (!doneEvents.length) return alert("No completed tasks for this day.");
+
+  const totals = {};
+  for (const ev of doneEvents) {
+    const name = ev.task.toLowerCase();
+    const s = new Date(ev.startTime);
+    const e = new Date(ev.endTime);
+    totals[name] = (totals[name] || 0) + (e - s);
+  }
+
+  let msg = `Time Report for ${currentDate}\n`;
+  for (const [name, ms] of Object.entries(totals)) {
+    const mins = Math.floor(ms / 60000);
+    const h = Math.floor(mins / 60), m = mins % 60;
+    msg += `${name}: ${h > 0 ? `${h}h ` : ""}${m}m\n`;
+  }
+  alert(msg);
+}
+
+// --- Import/Export ---
+exportBtn.onclick = () => downloadJSON();
+function downloadJSON() {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "eventData.json";
+  a.click();
+}
+importBtn.onclick = () => fileInput.click();
+fileInput.onchange = e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      data = JSON.parse(ev.target.result);
+      saveData();
+      populateDateSelect();
+      noParallelBox.checked = data.preferences.noParallel;
+      renderEvents();
+    } catch { alert("Invalid JSON file"); }
+  };
+  reader.readAsText(file);
+};
+
+// --- Preferences ---
+noParallelBox.checked = data.preferences.noParallel;
+noParallelBox.onchange = () => {
+  data.preferences.noParallel = noParallelBox.checked;
+  saveData();
+};
+
+// --- Close warning modal ---
+// let allowClose = false;
+// window.addEventListener("beforeunload", (e) => {
+//   if (!allowClose) {
+//     e.preventDefault();
+//     e.returnValue = "";
+//     closeModal.style.display = "flex";
+//     return "";
+//   }
+// });
+downloadBtn.onclick = downloadJSON;
+forceCloseBtn.onclick = () => {
+  allowClose = true;
+  closeModal.style.display = "none";
+  window.close(); // attempt to close
+};
+
+// --- Event bindings ---
+startBtn.onclick = () => startTask(taskInput.value);
+dateSelect.onchange = e => { currentDate = e.target.value; renderEvents(); };
+reportBtn.onclick = showDailyReport;
+
+// --- Init ---
+populateDateSelect();
+renderEvents();
+</script>
+</body>
+</html>
