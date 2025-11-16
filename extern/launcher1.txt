@@ -1,0 +1,360 @@
+import json
+import re
+import tkinter as tk
+from tkinter import ttk, filedialog
+
+# -----------------------------
+# CommandFrame
+# -----------------------------
+class CommandFrame(ttk.Frame):
+    def __init__(self, parent, command_data, **kwargs):
+        super().__init__(parent, **kwargs)
+
+        # metadata
+        self.title = command_data.get("name", "")
+        self.note = command_data.get("note", "")
+        self.template = command_data.get("template", "")
+        self.placeholders = command_data.get("placeholders", {}) or {}
+        self.inputs = {}
+
+        # visuals
+        self.configure(borderwidth=2, relief="ridge", padding=8)
+
+        # Title
+        ttk.Label(self, text=self.title, font=("Segoe UI", 12, "bold")).grid(
+            row=0, column=0, columnspan=3, sticky="w", pady=(0, 8)
+        )
+
+        # build input rows if builder
+        if command_data.get("type") == "builder":
+            self._create_input_fields()
+
+        # Snippet label
+        preview_row = len(self.placeholders) + 1
+        ttk.Label(self, text="Snippet:", font=("Segoe UI", 10, "bold")).grid(
+            row=preview_row, column=0, sticky="w", pady=(8, 2)
+        )
+
+        # Editable preview text area
+        self.preview_text = tk.Text(self, height=4, wrap="word", font=("Consolas", 10),
+                                    borderwidth=1, relief="solid")
+        self.preview_text.grid(row=preview_row + 1, column=0, columnspan=2, sticky="ew", padx=4, pady=4)
+
+        # Copy button for preview
+        copy_btn = ttk.Button(self, text="Copy", command=self.copy_preview)
+        copy_btn.grid(row=preview_row + 1, column=2, sticky="e", padx=4, pady=4)
+
+        # A small variable reflecting current preview text for search purposes
+        self.snippet_var = tk.StringVar(value="")
+        # Keep snippet_var in sync with preview_text when user edits
+        self.preview_text.bind("<KeyRelease>", lambda e: self.snippet_var.set(self.preview_text.get("1.0", "end").strip()))
+
+        # Initialize preview from template
+        self._update_preview()
+
+        # allow middle column to expand
+        self.columnconfigure(1, weight=1)
+
+    def _create_input_fields(self):
+        for row, (name, meta) in enumerate(self.placeholders.items(), start=1):
+            ttk.Label(self, text=meta.get("label", name)).grid(
+                row=row, column=0, sticky="w", padx=4, pady=3
+            )
+            ptype = meta.get("type", "text")
+            default = meta.get("default", "")
+            var = tk.StringVar(value=default)
+
+            if ptype == "text":
+                entry = ttk.Entry(self, textvariable=var)
+                entry.grid(row=row, column=1, sticky="ew", padx=4)
+                var.trace_add("write", lambda *_: self._update_preview())
+
+            elif ptype == "dropdown":
+                combo = ttk.Combobox(self, textvariable=var, values=meta.get("choices", []), state="readonly")
+                combo.grid(row=row, column=1, sticky="ew", padx=4)
+                combo.bind("<<ComboboxSelected>>", lambda *_: self._update_preview())
+
+            elif ptype in ("file", "dir"):
+                entry = ttk.Entry(self, textvariable=var)
+                entry.grid(row=row, column=1, sticky="ew", padx=4)
+                var.trace_add("write", lambda *_: self._update_preview())
+                browse_btn = ttk.Button(self, text="Browse", command=lambda v=var, t=ptype: self._browse(v, t))
+                browse_btn.grid(row=row, column=2, padx=4)
+
+            self.inputs[name] = var
+
+    def _browse(self, var, ptype):
+        path = filedialog.askdirectory() if ptype == "dir" else filedialog.askopenfilename()
+        if path:
+            var.set(path)
+            self._update_preview()
+
+    def _update_preview(self):
+        """
+        Render the template into the preview_text box.
+        This overwrites the preview content (i.e. placeholders drive preview).
+        User edits are not reflected back into the template (Option A).
+        """
+        rendered = self.template
+        for name, var in self.inputs.items():
+            # replace placeholder occurrences with current value
+            rendered = re.sub(rf"{{{{{name}:\w+}}}}", var.get().strip(), rendered)
+
+        # update preview_text (editable)
+        self.preview_text.delete("1.0", "end")
+        self.preview_text.insert("1.0", rendered)
+        # update snippet_var so searches reflect current preview content
+        self.snippet_var.set(rendered)
+
+    def copy_preview(self):
+        text = self.preview_text.get("1.0", "end").strip()
+        # put into system clipboard via toplevel
+        top = self.winfo_toplevel()
+        top.clipboard_clear()
+        top.clipboard_append(text)
+
+    def searchable_text(self):
+        """Return concatenated lowercase text used for searching."""
+        parts = [self.title or "", self.note or "", self.template or "", self.snippet_var.get() or ""]
+        return " ".join(parts).lower()
+
+
+# -----------------------------
+# Main App
+# -----------------------------
+class App:
+    def __init__(self, root, commands):
+        self.root = root
+        self.root.title("Command Manager")
+        self.root.geometry("900x600")
+        self.root.bind("<Escape>", lambda e: self.root.destroy())
+
+        # top: scrollable canvas area
+        self.top_frame = tk.Frame(self.root, bd=2, relief="sunken")
+        self.top_frame.pack(fill="both", expand=True, padx=10, pady=10)
+
+        self.canvas = tk.Canvas(self.top_frame, borderwidth=0, highlightthickness=0, bg="#f9f9f9")
+        self.vsb = tk.Scrollbar(self.top_frame, orient="vertical", command=self.canvas.yview)
+        self.canvas.configure(yscrollcommand=self.vsb.set)
+        self.vsb.pack(side="right", fill="y")
+        self.canvas.pack(side="left", fill="both", expand=True)
+
+        # outer (border) and inner frame that will hold command frames
+        self.scrollable_outer = tk.Frame(self.canvas, bg="red", bd=2, relief="solid")
+        self.inner = tk.Frame(self.scrollable_outer, bg="#f0f0f0")
+        self.inner.pack(fill="both", expand=True, padx=2, pady=2)
+
+        self.window_id = self.canvas.create_window((0, 0), window=self.scrollable_outer, anchor="nw")
+
+        # update scrollregion when inner changes
+        self.inner.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
+        # make inner width match canvas so children expand horizontally
+        self.canvas.bind("<Configure>", lambda e: self.canvas.itemconfigure(self.window_id, width=e.width))
+
+        # bottom bar: search + counter + close
+        self.bottom = tk.Frame(self.root, bg="#e9e9e9", bd=2, relief="groove")
+        self.bottom.pack(fill="x", padx=10, pady=5)
+
+        ttk.Label(self.bottom, text="Search:").pack(side="left", padx=(6, 4))
+
+        # search entry
+        self.search_var = tk.StringVar()
+        self.search_var.trace_add("write", lambda *_: self._apply_search())
+        self.search_entry = ttk.Entry(self.bottom, textvariable=self.search_var)
+        self.search_entry.pack(side="left", fill="x", expand=True, padx=(0, 6))
+
+        # counter (fixed pixel width wrapper)
+        counter_wrapper = tk.Frame(self.bottom, width=60, bg="#e9e9e9")
+        counter_wrapper.pack_propagate(False)  # keep fixed width
+        counter_wrapper.pack(side="left", padx=(0, 10))
+        self.counter_var = tk.StringVar()
+        self.counter_label = tk.Label(counter_wrapper, textvariable=self.counter_var, bg="#e9e9e9", anchor="w")
+        self.counter_label.pack(fill="both", expand=True)
+
+        # close button
+        self.close_button = tk.Button(self.bottom, text="Close", command=self.root.destroy)
+        self.close_button.pack(side="right", padx=6, pady=5)
+
+        # storage for items
+        self.all_items = []   # list of dicts {frame, title, note, template}
+        self.visible_items = []
+
+        # preload commands
+        self._load_commands(commands)
+
+        # ensure mousewheel scrolling works on macOS/Windows/Linux
+        self.canvas.bind_all("<MouseWheel>", self._on_mousewheel, add="+")
+        self.canvas.bind_all("<Button-4>", self._on_mousewheel, add="+")
+        self.canvas.bind_all("<Button-5>", self._on_mousewheel, add="+")
+
+        # show all initially
+        self._show_all()
+
+    # -----------------------
+    # mouse wheel helper
+    # -----------------------
+    def _on_mousewheel(self, event):
+        # Linux (Button-4/5)
+        if getattr(event, "num", None) == 4:
+            self.canvas.yview_scroll(-1, "units")
+            return
+        if getattr(event, "num", None) == 5:
+            self.canvas.yview_scroll(1, "units")
+            return
+        # Windows/macOS: event.delta
+        delta = getattr(event, "delta", 0)
+        if delta:
+            step = int(-1 * (delta / 120)) if abs(delta) >= 120 else (-1 if delta > 0 else 1)
+            self.canvas.yview_scroll(step, "units")
+
+    # -----------------------
+    # Loading / pre-creating frames
+    # -----------------------
+    def _load_commands(self, commands):
+        """
+        commands: iterable of command dicts (from JSON).
+        Pre-create CommandFrame for every command and keep metadata.
+        """
+        for cmd in commands:
+            frame = CommandFrame(self.inner, cmd)
+            meta = {
+                "frame": frame,
+                "title": (cmd.get("name") or "").lower(),
+                "note": (cmd.get("note") or "").lower(),
+                "template": (cmd.get("template") or "").lower(),
+            }
+            self.all_items.append(meta)
+
+    # -----------------------
+    # show / hide helpers
+    # -----------------------
+    def _show_all(self):
+        # hide any currently visible
+        for it in self.visible_items:
+            it["frame"].grid_forget()
+
+        self.visible_items = list(self.all_items)
+        # place them in the inner frame using grid (one per row)
+        for i, it in enumerate(self.visible_items):
+            it["frame"].grid(row=i, column=0, sticky="ew", padx=6, pady=6)
+        # ensure inner column expands
+        self.inner.columnconfigure(0, weight=1)
+        # update counter
+        self._update_counter(shown=len(self.visible_items), total=len(self.all_items))
+
+    def _hide_all(self):
+        for it in self.all_items:
+            it["frame"].grid_forget()
+        self.visible_items = []
+        self._update_counter(shown=0, total=len(self.all_items))
+
+    def _update_counter(self, shown, total):
+        if self.search_var.get().strip() == "":
+            # empty search -> "x items"
+            self.counter_var.set(f"{total} items")
+        else:
+            # non-empty -> "f/x items" or "0/x items"
+            self.counter_var.set(f"{shown}/{total} items")
+
+    # -----------------------
+    # search & sort
+    # -----------------------
+    def _apply_search(self):
+        text = self.search_var.get().strip().lower()
+        total = len(self.all_items)
+
+        if text == "":
+            self._show_all()
+            return
+
+        matches = []
+        for it in self.all_items:
+            score = None
+            if text in it["title"]:
+                score = 0
+            elif text in it["note"]:
+                score = 1
+            elif text in it["template"]:
+                score = 2
+            # also check current preview/snippet content (least priority)
+            elif text in it["frame"].snippet_var.get().lower():
+                score = 3
+
+            if score is not None:
+                matches.append((score, it))
+
+        if not matches:
+            # No results: clear/hide all items and set counter to 0/x
+            self._hide_all()
+            return
+
+        # sort by score, then by title
+        matches.sort(key=lambda pair: (pair[0], pair[1]["title"]))
+
+        # hide everything first
+        for it in self.all_items:
+            it["frame"].grid_forget()
+
+        # show matches in sorted order
+        self.visible_items = []
+        for i, (_, it) in enumerate(matches):
+            it["frame"].grid(row=i, column=0, sticky="ew", padx=6, pady=6)
+            self.visible_items.append(it)
+
+        # update counter
+        self.inner.columnconfigure(0, weight=1)
+        self._update_counter(shown=len(self.visible_items), total=total)
+
+    # -----------------------
+    # reorder visible (if needed)
+    # -----------------------
+    def reorder_visible(self):
+        for i, it in enumerate(self.visible_items):
+            it["frame"].grid_configure(row=i)
+
+
+# -----------------------------
+# Example / entry point
+# -----------------------------
+if __name__ == "__main__":
+    # Try to load data.json; if not present, use sample commands
+    try:
+        with open("data.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+            commands = data.get("commands", [])
+    except Exception:
+        commands = [
+            {
+                "name": "List Home",
+                "note": "list files in home",
+                "type": "builder",
+                "template": "ls -la {{path:dir}}",
+                "placeholders": {"path": {"type": "dir", "label": "Path", "default": "/home"}}
+            },
+            {
+                "name": "Search in Files",
+                "note": "grep recursively",
+                "type": "builder",
+                "template": "grep -R \"{{pattern:text}}\" {{path:dir}}",
+                "placeholders": {
+                    "pattern": {"type": "text", "label": "Pattern"},
+                    "path": {"type": "dir", "label": "Path", "default": "/"}
+                }
+            },
+            {
+                "name": "Copy to Remote",
+                "note": "use scp",
+                "type": "builder",
+                "template": "scp {{file:file}} {{user:text}}@{{host:dropdown}}:{{target_dir:dir}}",
+                "placeholders": {
+                    "file": {"type": "file", "label": "File"},
+                    "user": {"type": "text", "label": "User", "default": "ubuntu"},
+                    "host": {"type": "dropdown", "label": "Host", "choices": ["prod", "staging"]},
+                    "target_dir": {"type": "dir", "label": "Remote path", "default": "/var/www"}
+                }
+            }
+        ]
+
+    root = tk.Tk()
+    app = App(root, commands)
+    root.mainloop()
